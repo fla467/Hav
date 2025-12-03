@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopscotch Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        h1 {
+            color: #ff6f61;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #ff6f61;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+        button:hover {
+            background-color: #e65b50;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hopscotch Viewer</h1>
+    <p>Enter a Hopscotch project URL or UUID:</p>
+    <input type="text" id="projectInput" placeholder="e.g. https://c.gethopscotch.com/p/123abc or 123abc">
+    <button onclick="viewProject()">View Project</button>
+
+    <script>
+        function viewProject() {
+            let input = document.getElementById('projectInput').value.trim();
+            if (!input) {
+                alert("Please enter a project URL or UUID.");
+                return;
+            }
+
+            // Extract UUID if full URL is provided
+            let uuid = input;
+            try {
+                const url = new URL(input);
+                const paths = url.pathname.split('/');
+                uuid = paths[paths.length - 1] || paths[paths.length - 2];
+            } catch(e) {
+                // input is likely just the UUID
+            }
+
+            // Open in new tab
+            const viewerUrl = `https://ae-hopscotch.github.io/hs-tools/play-project/?id=${uuid}`;
+            window.open(viewerUrl, '_blank');
+        }
+    </script>
+</body>
+</html>
