@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF‑8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hopscotch Viewer</title>
   <style>
@@ -35,6 +35,7 @@
       display: none;
     }
     .info { font-size: 14px; color: #333; margin: 5px 0; }
+    .stats { font-size: 14px; color: #333; margin: 5px 0; }
     .disclaimer {
       font-size: 12px;
       color: #555;
@@ -54,6 +55,7 @@
   </div>
 
   <div id="projectInfo" class="info"></div>
+  <div id="projectStats" class="stats"></div>
   <iframe id="projectFrame" src=""></iframe>
 
   <div class="disclaimer">
@@ -81,25 +83,18 @@
         // assume input is UUID
       }
 
-      // Ask user for project name manually
-      let projectName = prompt("Enter the project name (for confirmation):");
-      if (!projectName) projectName = uuid;
-
-      if (!confirm(`Is "${projectName}" your project?`)) return;
-
       const viewerUrl = `https://ae-hopscotch.github.io/hs-tools/play-project/?id=${uuid}`;
       document.getElementById('projectFrame').src = viewerUrl;
       document.getElementById('projectFrame').style.display = 'block';
 
-      document.getElementById('projectInfo').textContent = `Project: ${projectName}`;
+      document.getElementById('projectInfo').textContent = `Project ID: ${uuid}`;
 
       const link = document.getElementById('viewerLink');
       link.href = viewerUrl;
       link.textContent = viewerUrl;
 
-      // Optional: show placeholder plays/likes
-      const infoDiv = document.getElementById('projectInfo');
-      infoDiv.textContent += ` | Plays: N/A, Likes: N/A`;
+      // Placeholder for plays/likes (if you can get them somehow)
+      document.getElementById('projectStats').textContent = `Plays: N/A  |  Likes: N/A`;
     }
   </script>
 </body>
