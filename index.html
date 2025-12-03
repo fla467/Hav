@@ -1,107 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hopscotch Viewer</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f0f0f0;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        h1 {
-            color: #ff6f61;
-            margin-top: 20px;
-        }
-        .input-section {
-            margin: 20px;
-        }
-        input, button {
-            padding: 10px;
-            margin: 5px;
-            font-size: 16px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-        button {
-            background-color: #ff6f61;
-            color: white;
-            cursor: pointer;
-            border: none;
-        }
-        button:hover {
-            background-color: #e65b50;
-        }
-        iframe {
-            width: 90%;
-            height: 600px;
-            border: 2px solid #ccc;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-        .disclaimer {
-            font-size: 12px;
-            color: #555;
-            margin-bottom: 20px;
-        }
-        .disclaimer a {
-            color: #ff6f61;
-            text-decoration: none;
-        }
-        .disclaimer a:hover {
-            text-decoration: underline;
-        }
-    </style>
+  <meta charset="UTF‑8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hopscotch Viewer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 { color: #ff6f61; margin-top: 20px; }
+    .input-section { margin: 20px; }
+    input, button {
+      padding: 10px; margin: 5px;
+      font-size: 16px; border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #ff6f61;
+      color: white;
+      cursor: pointer;
+      border: none;
+    }
+    button:hover { background-color: #e65b50; }
+    #projectFrame {
+      width: 90%; height: 600px;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      display: none;
+    }
+    .info {
+      font-size: 14px;
+      color: #333;
+      margin: 5px 0;
+    }
+    .disclaimer {
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 20px;
+    }
+    .disclaimer a {
+      color: #ff6f61;
+      text-decoration: none;
+    }
+    .disclaimer a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body>
-    <h1>Hopscotch Viewer</h1>
+  <h1>Hopscotch Viewer</h1>
 
-    <div class="input-section">
-        <p>Enter a Hopscotch project URL or UUID:</p>
-        <input type="text" id="projectInput" placeholder="e.g. https://c.gethopscotch.com/p/123abc or 123abc">
-        <button onclick="viewProject()">View Project</button>
-    </div>
+  <div class="input-section">
+    <p>Enter a Hopscotch project URL or UUID:</p>
+    <input type="text" id="projectInput" placeholder="e.g. https://c.gethopscotch.com/p/123abc or 123abc">
+    <button onclick="startViewing()">View Project</button>
+  </div>
 
-    <iframe id="projectFrame" src=""></iframe>
+  <!-- Info about project (name, plays/likes) -->
+  <div id="projectInfo" class="info"></div>
 
-    <div class="disclaimer">
-        Actual viewing of the project is from 
-        <a id="viewerLink" href="https://ae-hopscotch.github.io/hs-tools/play-project/?id=" target="_blank">
-            https://ae-hopscotch.github.io/hs-tools/play-project/?id=
-        </a>
-    </div>
+  <iframe id="projectFrame" src=""></iframe>
 
-    <script>
-        function viewProject() {
-            let input = document.getElementById('projectInput').value.trim();
-            if (!input) {
-                alert("Please enter a project URL or UUID.");
-                return;
-            }
+  <div class="disclaimer">
+    Actual viewing of the project is from  
+    <a id="viewerLink" href="https://ae-hopscotch.github.io/hs-tools/play-project/?id=" target="_blank">
+      https://ae-hopscotch.github.io/hs-tools/play-project/?id=
+    </a>
+  </div>
 
-            // Extract UUID if full URL is provided
-            let uuid = input;
-            try {
-                const url = new URL(input);
-                const paths = url.pathname.split('/');
-                uuid = paths[paths.length - 1] || paths[paths.length - 2];
-            } catch(e) {
-                // input is likely just the UUID
-            }
+  <script>
+  async function fetchProjectMetadata(uuid) {
+    // Attempt to fetch project page to parse title — CORS may block this.
+    // Hopscotch does not seem to offer a stable public JSON API for play/like stats.
+    // This will only work if the remote server allows cross‑origin fetch.
+    try {
+      const resp = await fetch(`https://c.gethopscotch.com/p/${uuid}`);
+      if (!resp.ok) throw new Error('Project page fetch failed');
+      const html = await resp.text();
+      // Very naive extraction — look for <title>ProjectName …</title>
+      const m = html.match(/<title>([^<]+)<\\/title>/);
+      const name = m ? m[1] : null;
+      return { name };
+    } catch(e) {
+      console.warn('Could not fetch metadata:', e);
+      return { name: null };
+    }
+  }
 
-            // Set iframe src
-            const viewerUrl = `https://ae-hopscotch.github.io/hs-tools/play-project/?id=${uuid}`;
-            document.getElementById('projectFrame').src = viewerUrl;
+  async function startViewing() {
+    let input = document.getElementById('projectInput').value.trim();
+    if (!input) { alert("Please enter a project URL or UUID."); return; }
 
-            // Update disclaimer link
-            const link = document.getElementById('viewerLink');
-            link.href = viewerUrl;
-            link.textContent = viewerUrl;
-        }
-    </script>
+    let uuid = input;
+    try {
+      const url = new URL(input);
+      const paths = url.pathname.split('/');
+      uuid = paths[paths.length - 1] || paths[paths.length - 2];
+    } catch(e) {
+      // assume just UUID
+    }
+
+    const meta = await fetchProjectMetadata(uuid);
+    let proceed = true;
+    if (meta.name) {
+      proceed = confirm(`Is "${meta.name}" your project?`);
+    }
+    if (!proceed) return;
+
+    const viewerUrl = `https://ae-hopscotch.github.io/hs‑tools/play-project/?id=${uuid}`;
+    document.getElementById('projectFrame').src = viewerUrl;
+    document.getElementById('projectFrame').style.display = 'block';
+
+    const infoDiv = document.getElementById('projectInfo');
+    infoDiv.textContent = meta.name
+      ? `Project: ${meta.name}`
+      : `Project ID: ${uuid}`;
+
+    const link = document.getElementById('viewerLink');
+    link.href = viewerUrl;
+    link.textContent = viewerUrl;
+
+    // Note: plays/likes count not displayed because no stable API found
+  }
+  </script>
 </body>
 </html>
