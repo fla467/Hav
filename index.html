@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF‑8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hopscotch Viewer</title>
   <style>
@@ -34,20 +34,13 @@
       margin-bottom: 10px;
       display: none;
     }
-    .info {
-      font-size: 14px;
-      color: #333;
-      margin: 5px 0;
-    }
+    .info { font-size: 14px; color: #333; margin: 5px 0; }
     .disclaimer {
       font-size: 12px;
       color: #555;
       margin-bottom: 20px;
     }
-    .disclaimer a {
-      color: #ff6f61;
-      text-decoration: none;
-    }
+    .disclaimer a { color: #ff6f61; text-decoration: none; }
     .disclaimer a:hover { text-decoration: underline; }
   </style>
 </head>
@@ -57,12 +50,10 @@
   <div class="input-section">
     <p>Enter a Hopscotch project URL or UUID:</p>
     <input type="text" id="projectInput" placeholder="e.g. https://c.gethopscotch.com/p/123abc or 123abc">
-    <button onclick="startViewing()">View Project</button>
+    <button onclick="viewProject()">View Project</button>
   </div>
 
-  <!-- Info about project (name, plays/likes) -->
   <div id="projectInfo" class="info"></div>
-
   <iframe id="projectFrame" src=""></iframe>
 
   <div class="disclaimer">
@@ -73,59 +64,43 @@
   </div>
 
   <script>
-  async function fetchProjectMetadata(uuid) {
-    // Attempt to fetch project page to parse title — CORS may block this.
-    // Hopscotch does not seem to offer a stable public JSON API for play/like stats.
-    // This will only work if the remote server allows cross‑origin fetch.
-    try {
-      const resp = await fetch(`https://c.gethopscotch.com/p/${uuid}`);
-      if (!resp.ok) throw new Error('Project page fetch failed');
-      const html = await resp.text();
-      // Very naive extraction — look for <title>ProjectName …</title>
-      const m = html.match(/<title>([^<]+)<\\/title>/);
-      const name = m ? m[1] : null;
-      return { name };
-    } catch(e) {
-      console.warn('Could not fetch metadata:', e);
-      return { name: null };
+    function viewProject() {
+      let input = document.getElementById('projectInput').value.trim();
+      if (!input) {
+        alert("Please enter a project URL or UUID.");
+        return;
+      }
+
+      // Extract UUID if full URL is given
+      let uuid = input;
+      try {
+        const url = new URL(input);
+        const paths = url.pathname.split('/');
+        uuid = paths[paths.length - 1] || paths[paths.length - 2];
+      } catch(e) {
+        // assume input is UUID
+      }
+
+      // Ask user for project name manually
+      let projectName = prompt("Enter the project name (for confirmation):");
+      if (!projectName) projectName = uuid;
+
+      if (!confirm(`Is "${projectName}" your project?`)) return;
+
+      const viewerUrl = `https://ae-hopscotch.github.io/hs-tools/play-project/?id=${uuid}`;
+      document.getElementById('projectFrame').src = viewerUrl;
+      document.getElementById('projectFrame').style.display = 'block';
+
+      document.getElementById('projectInfo').textContent = `Project: ${projectName}`;
+
+      const link = document.getElementById('viewerLink');
+      link.href = viewerUrl;
+      link.textContent = viewerUrl;
+
+      // Optional: show placeholder plays/likes
+      const infoDiv = document.getElementById('projectInfo');
+      infoDiv.textContent += ` | Plays: N/A, Likes: N/A`;
     }
-  }
-
-  async function startViewing() {
-    let input = document.getElementById('projectInput').value.trim();
-    if (!input) { alert("Please enter a project URL or UUID."); return; }
-
-    let uuid = input;
-    try {
-      const url = new URL(input);
-      const paths = url.pathname.split('/');
-      uuid = paths[paths.length - 1] || paths[paths.length - 2];
-    } catch(e) {
-      // assume just UUID
-    }
-
-    const meta = await fetchProjectMetadata(uuid);
-    let proceed = true;
-    if (meta.name) {
-      proceed = confirm(`Is "${meta.name}" your project?`);
-    }
-    if (!proceed) return;
-
-    const viewerUrl = `https://ae-hopscotch.github.io/hs‑tools/play-project/?id=${uuid}`;
-    document.getElementById('projectFrame').src = viewerUrl;
-    document.getElementById('projectFrame').style.display = 'block';
-
-    const infoDiv = document.getElementById('projectInfo');
-    infoDiv.textContent = meta.name
-      ? `Project: ${meta.name}`
-      : `Project ID: ${uuid}`;
-
-    const link = document.getElementById('viewerLink');
-    link.href = viewerUrl;
-    link.textContent = viewerUrl;
-
-    // Note: plays/likes count not displayed because no stable API found
-  }
   </script>
 </body>
 </html>
