@@ -1,266 +1,224 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Hopscotch Viewer</title>
-  <style>
-    :root{
-      --bg: #f3f4f6;
-      --card: #ffffff;
-      --text: #111827;
-      --muted: #6b7280;
-      --accent: #ff6f61;
-      --accent-contrast: #fff;
-      --border: #e5e7eb;
-    }
-    [data-theme="dark"]{
-      --bg: #0b1020;
-      --card: #0f1724;
-      --text: #e6eef8;
-      --muted: #9aa7bf;
-      --accent: #ff8b78;
-      --accent-contrast: #0f1724;
-      --border: #1f2937;
+<meta charset="UTF-8">
+<title>Hopscotch Viewer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f0f0f0;
+        color: #000;
+        margin: 0;
+        text-align: center;
     }
 
-    html,body{
-      height:100%;
-      margin:0;
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      background:var(--bg);
-      color:var(--text);
-      -webkit-font-smoothing:antialiased;
+    /* Dark mode */
+    body.dark {
+        background: #111;
+        color: #fff;
+    }
+    body.dark input, body.dark button {
+        background: #222;
+        color: #fff;
+        border: 1px solid #444;
     }
 
-    .container{
-      max-width:1000px;
-      margin:28px auto;
-      padding:18px;
-      display:flex;
-      flex-direction:column;
-      gap:14px;
+    /* Popup Home Screen */
+    #homePopup {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.75);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+    #homeBox {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        width: 80%;
+        max-width: 400px;
+    }
+    #homeBox h1 { color: #ff6f61; }
+    #homeBox button {
+        margin: 10px;
+        padding: 12px 20px;
+        font-size: 18px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        background: #ff6f61;
+        color: white;
+    }
+    #homeBox button:hover { background: #e65b50; }
+
+    /* Shared elements */
+    .section { margin: 20px; }
+    input {
+        padding: 10px;
+        font-size: 16px;
+        width: 80%;
+        max-width: 400px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+    }
+    button {
+        padding: 10px 18px;
+        font-size: 16px;
+        border-radius: 8px;
+        border: none;
+        background: #ff6f61;
+        color: white;
+        cursor: pointer;
+    }
+    button:hover { background: #e65b50; }
+
+    iframe {
+        width: 90%;
+        height: 600px;
+        border: 2px solid #ccc;
+        border-radius: 10px;
+        display: none;
+        margin-top: 15px;
     }
 
-    header{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-    }
-    h1{
-      margin:0;
-      font-size:20px;
-      letter-spacing:-0.2px;
-    }
-    .controls{
-      display:flex;
-      gap:10px;
-      align-items:center;
-    }
-    .card{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:12px;
-      box-shadow:0 6px 18px rgba(0,0,0,0.03);
+    /* Hide both layouts until chosen */
+    #oldLayout, #newLayout {
+        display: none;
     }
 
-    input[type="text"]{
-      padding:10px 12px;
-      border-radius:8px;
-      border:1px solid var(--border);
-      background:transparent;
-      color:var(--text);
-      outline:none;
-      min-width:260px;
-      box-sizing:border-box;
+    /* Dark mode toggle */
+    #darkToggle {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        padding: 8px 14px;
+        border-radius: 8px;
+        background: #444;
+        color: white;
+        cursor: pointer;
+        display: none; /* only for NEW layout */
     }
-
-    .btn{
-      padding:9px 12px;
-      border-radius:8px;
-      border:1px solid transparent;
-      background:var(--accent);
-      color:var(--accent-contrast);
-      cursor:pointer;
-      font-weight:600;
-    }
-    .btn-ghost{
-      background:transparent;
-      border:1px solid var(--border);
-      color:var(--text);
-    }
-    .small{
-      padding:6px 8px;
-      font-size:13px;
-      border-radius:8px;
-    }
-
-    .row{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
-
-    .modes{
-      display:flex;
-      gap:8px;
-      align-items:center;
-    }
-
-    label.switch{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      cursor:pointer;
-      user-select:none;
-    }
-    .theme-toggle{
-      width:42px;
-      height:26px;
-      background:var(--border);
-      border-radius:999px;
-      position:relative;
-      padding:3px;
-      box-sizing:border-box;
-    }
-    .theme-toggle .dot{
-      width:20px;height:20px;border-radius:50%;
-      background:var(--card); position:absolute; left:3px; top:3px;
-      transition: transform .18s ease;
-    }
-    [data-theme="dark"] .theme-toggle .dot{
-      transform:translateX(16px);
-    }
-
-    .meta{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-    }
-
-    #projectFrame{
-      width:100%;
-      height:640px;
-      border-radius:10px;
-      border:1px solid var(--border);
-      display:none; /* hidden until load */
-      background: #000;
-    }
-
-    .info-line{
-      font-size:14px;
-      color:var(--muted);
-      display:flex;
-      gap:8px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
-
-    .left{
-      display:flex;
-      gap:10px;
-      align-items:center;
-    }
-
-    .disclaimer{
-      font-size:13px;
-      color:var(--muted);
-      text-align:center;
-      margin-top:8px;
-    }
-
-    a.viewer-link{
-      color:var(--accent);
-      text-decoration:none;
-      font-weight:600;
-    }
-
-    .stats{
-      font-weight:700;
-      color:var(--text);
-    }
-
-    /* responsive */
-    @media (max-width:720px){
-      #projectFrame{ height:480px; }
-      .container{ padding:12px; }
-      input[type="text"]{ min-width:160px; width:100%; }
-    }
-  </style>
+</style>
 </head>
-<body data-theme="light">
-  <div class="container">
-    <header>
-      <div>
-        <h1 class="title">Hopscotch Viewer</h1>
-        <div style="font-size:13px;color:var(--muted)">Enter a project URL or UUID, choose a mode, and view.</div>
-      </div>
+<body>
 
-      <div class="controls">
-        <div class="modes card" style="display:flex;align-items:center;">
-          <label style="font-size:13px;color:var(--muted);margin-right:6px">View mode:</label>
-          <label style="display:flex;gap:6px;align-items:center;font-size:13px">
-            <input type="radio" name="viewMode" id="modeEmbedded" value="embedded" checked /> Embedded
-          </label>
-          <label style="display:flex;gap:6px;align-items:center;font-size:13px">
-            <input type="radio" name="viewMode" id="modeFull" value="full" /> Full Project
-          </label>
-        </div>
+<!-- DARK MODE BUTTON -->
+<button id="darkToggle" onclick="toggleDarkMode()">Dark Mode</button>
 
-        <label class="switch card" style="padding:8px;">
-          <div style="font-size:13px;color:var(--muted);">Theme</div>
-          <div class="theme-toggle" id="themeToggle" title="Toggle light/dark">
-            <div class="dot"></div>
-          </div>
-        </label>
-      </div>
-    </header>
-
-    <div class="card">
-      <div class="row" style="align-items:center;">
-        <input id="projectInput" type="text" placeholder="https://c.gethopscotch.com/p/UUID or UUID" />
-        <button id="viewBtn" class="btn">View Project</button>
-        <button id="manualStatsBtn" class="btn btn-ghost small" title="Manually set plays/likes">Set stats</button>
-        <button id="openSameTab" class="btn btn-ghost small" title="Open full project in same tab" style="display:none">Open here</button>
-      </div>
-
-      <div class="meta" style="margin-top:10px;">
-        <div class="left info-line">
-          <div id="projectLabel">Project ID: <span class="stats" id="projectIdLabel">—</span></div>
-          <div id="projectStats" style="display:flex;gap:8px;align-items:center;color:var(--muted)">Plays: <span class="stats" id="playsLabel">N/A</span> | Likes: <span class="stats" id="likesLabel">N/A</span></div>
-        </div>
-
-        <div style="font-size:13px;color:var(--muted)">
-          Viewer: <a id="viewerLink" class="viewer-link" href="https://ae-hopscotch.github.io/hs-tools/play-project/?id=" target="_blank" rel="noopener">hs-tools viewer</a>
-        </div>
-      </div>
+<!-- HOME SCREEN POPUP -->
+<div id="homePopup">
+    <div id="homeBox">
+        <h1>Hopscotch Viewer</h1>
+        <p>Select a version:</p>
+        <button onclick="loadOld()">OLD VIEWER</button>
+        <button onclick="loadNew()">NEW VIEWER</button>
     </div>
+</div>
 
-    <div class="card" id="frameCard" style="padding:10px;">
-      <iframe id="projectFrame" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
-      <div id="framePlaceholder" style="display:block;padding:30px 12px;text-align:center;color:var(--muted)">
-        No project loaded — enter a URL or UUID and click <strong>View Project</strong>.
-      </div>
-    </div>
+<!-- OLD LAYOUT -->
+<div id="oldLayout">
+    <h1>Old Hopscotch Viewer</h1>
+    <p>Enter a Hopscotch URL or UUID:</p>
+    <input id="oldInput" placeholder="Paste URL or UUID">
+    <br><br>
+    <button onclick="loadOldProject()">View Project</button>
+    <br>
+    <iframe id="oldFrame"></iframe>
+</div>
 
-    <div class="disclaimer card">
-      Actual viewing of the project is from
-      <a id="viewerUrlText" class="viewer-link" href="https://ae-hopscotch.github.io/hs-tools/play-project/?id=" target="_blank" rel="noopener">
-        https://ae-hopscotch.github.io/hs-tools/play-project/?id=
-      </a>
-    </div>
-  </div>
+<!-- NEW LAYOUT -->
+<div id="newLayout">
+    <h1>New Hopscotch Viewer</h1>
 
-  <script>
-    // Theme toggle
-    const themeToggle = document.getElementById('themeToggle');
-    const doc = document.documentElement;
-    const body = document.body;
-    function setTheme(theme){
-      body.setAttribute('data-theme', theme);
-      // store in localStorage
-      try{
+    <button onclick="setMode('embed')">Embedded Mode</button>
+    <button onclick="setMode('full')">Full Project Mode</button>
+
+    <p>Enter Hopscotch URL or UUID:</p>
+    <input id="newInput" placeholder="Paste URL or UUID">
+
+    <br><br>
+    <button onclick="loadNewProject()">Load Project</button>
+
+    <p id="stats">Plays: N/A | Likes: N/A</p>
+
+    <iframe id="newFrame"></iframe>
+</div>
+
+<script>
+let currentMode = "embed";
+
+function toggleDarkMode() {
+    document.body.classList.toggle("dark");
+}
+
+/* HOME SCREEN LOGIC */
+function loadOld() {
+    document.getElementById("homePopup").style.display = "none";
+    document.getElementById("oldLayout").style.display = "block";
+    document.getElementById("darkToggle").style.display = "none";
+}
+
+function loadNew() {
+    document.getElementById("homePopup").style.display = "none";
+    document.getElementById("newLayout").style.display = "block";
+    document.getElementById("darkToggle").style.display = "block";
+}
+
+/* Extract UUID from a URL or accept direct UUID */
+function extractUUID(input) {
+    try {
+        let url = new URL(input);
+        let parts = url.pathname.split("/");
+        return parts.pop() || parts.pop();
+    } catch {
+        return input;
+    }
+}
+
+/* OLD VIEWER FUNCTION */
+function loadOldProject() {
+    let input = document.getElementById("oldInput").value.trim();
+    if (!input) { alert("Enter a URL or UUID"); return; }
+
+    let uuid = extractUUID(input);
+    let viewer = "https://ae-hopscotch.github.io/hs-tools/play-project/?id=" + uuid;
+
+    let frame = document.getElementById("oldFrame");
+    frame.src = viewer;
+    frame.style.display = "block";
+}
+
+/* NEW VIEWER FUNCTIONS */
+function setMode(m) {
+    currentMode = m;
+    alert("Mode set to: " + m.toUpperCase());
+}
+
+function loadNewProject() {
+    let input = document.getElementById("newInput").value.trim();
+    if (!input) { alert("Enter a URL or UUID"); return; }
+
+    let uuid = extractUUID(input);
+    let viewer = "https://ae-hopscotch.github.io/hs-tools/play-project/?id=" + uuid;
+
+    document.getElementById("stats").textContent = "Plays: N/A | Likes: N/A";
+
+    if (currentMode === "embed") {
+        let frame = document.getElementById("newFrame");
+        frame.src = viewer;
+        frame.style.display = "block";
+    } else {
+        window.open(viewer, "_blank");
+    }
+}
+</script>
+
+</body>
+</html>
