@@ -7,181 +7,197 @@
 <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
 
 <style>
-    body {
-        font-family: "Permanent Marker", cursive;
-        margin: 0;
-        background: #222;
-        color: white;
-        text-align: center;
-    }
+body {
+    margin: 0;
+    font-family: "Permanent Marker", cursive;
+    text-align: center;
+    background: #ffffff;
+    color: #000;
+}
 
-    .home-screen {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding-top: 100px;
-    }
+/* HOME SCREEN */
+#home {
+    padding-top: 80px;
+}
 
-    button {
-        font-family: "Permanent Marker", cursive;
-        padding: 15px 25px;
-        margin: 10px;
-        font-size: 22px;
-        cursor: pointer;
-        border: none;
-        border-radius: 12px;
-    }
+button {
+    padding: 15px 25px;
+    margin: 10px;
+    font-size: 22px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: "Permanent Marker", cursive;
+}
 
-    .old-btn { background: #3498db; }
-    .new-btn { background: #2ecc71; }
+.old-btn { background: #3498db; }
+.new-btn { background: #2ecc71; }
 
-    .hidden { display: none; }
+.hidden { display: none; }
 
-    /* Dark/Light mode */
-    .light {
-        background: #f4f4f4;
-        color: #111;
-    }
+iframe {
+    width: 90%;
+    height: 600px;
+    border: 3px solid #555;
+    border-radius: 12px;
+    margin-top: 20px;
+    display: none;
+}
 
-    /* Viewer wrapper */
-    #viewerSection { margin-top: 30px; display: none; }
+/* FOLLOW THE DEV BUTTON */
+#followDev {
+    position: fixed;
+    top: 40%;
+    left: -160px;
+    padding: 15px 25px;
+    background: #ff4dd2;
+    border-radius: 0 12px 12px 0;
+    transition: 0.35s ease;
+    z-index: 9999;
+    font-size: 22px;
+}
 
-    iframe {
-        width: 90%;
-        height: 600px;
-        border: 4px solid #555;
-        border-radius: 12px;
-        margin-top: 20px;
-        display: none;
-    }
+#followDev:hover {
+    left: 0;
+}
 
-    .mode-toggle {
-        font-size: 20px;
-        background: #ffbb00;
-    }
+#followDev a {
+    color: white;
+    text-decoration: none;
+}
 
-    /* Custom error popup */
-    #errorPopup {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) scale(0);
-        background: #e74c3c;
-        color: white;
-        padding: 25px 40px;
-        border-radius: 16px;
-        font-size: 26px;
-        transition: 0.25s ease;
-        z-index: 999;
-    }
+/* DARK MODE */
+.dark {
+    background: #1a1a1a;
+    color: white;
+}
+.dark iframe {
+    border-color: #888;
+}
 
-    #errorPopup.show {
-        transform: translate(-50%, -50%) scale(1);
-    }
+/* ANIMATED ERROR POPUP */
+#errorPopup {
+    position: fixed;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #e74c3c;
+    color: white;
+    padding: 20px 50px;
+    border-radius: 16px;
+    font-size: 26px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    transition: 0.4s;
+    z-index: 9999;
+}
+#errorPopup.show {
+    top: 40px;
+}
 
-    #footer {
-        margin-top: 40px;
-        opacity: 0.7;
-        font-size: 18px;
-    }
-
-    a { color: yellow; text-decoration: none; }
+#footer {
+    margin-top: 40px;
+    font-size: 18px;
+    opacity: 0.7;
+}
 </style>
 </head>
 
 <body>
 
-<!-- HOME SCREEN -->
-<div id="home" class="home-screen">
-    <h1>Hopscotch Viewer</h1>
-    <button class="old-btn" onclick="loadOld()">Old Viewer</button>
-    <button class="new-btn" onclick="loadNew()">New Viewer</button>
+<!-- FOLLOW DEV BUTTON (GLOBAL) -->
+<div id="followDev">
+    <a href="https://www.gethopscotch.com/6811491" target="_blank">Follow the Dev</a>
+</div>
 
-    <button style="background:#ff66cc;" onclick="window.location='https://www.gethopscotch.com/6811491'">
-        Follow the Dev (Flabba_)
-    </button>
+<!-- HOME SCREEN -->
+<div id="home">
+    <h1>Hopscotch Viewer</h1>
+    <button class="old-btn" onclick="openOld()">Old Mode</button>
+    <button class="new-btn" onclick="openNew()">New Mode</button>
 </div>
 
 <!-- ERROR POPUP -->
 <div id="errorPopup">Invalid URL Entered!</div>
 
-<!-- OLD VIEWER -->
-<div id="oldViewer" class="hidden">
-    <h2>Old Viewer</h2>
-    <input id="oldInput" placeholder="Enter Hopscotch URL or UUID" style="padding:10px;font-size:20px;width:70%;">
-    <button onclick="loadOldProject()" style="background:#3498db;">Load Project</button>
+<!-- OLD MODE -->
+<div id="oldMode" class="hidden">
+    <h2>Old Mode (Embedded Only)</h2>
+    <input id="oldInput" placeholder="Enter URL or UUID" style="padding:10px;font-size:20px;width:70%;">
+    <button onclick="loadOldProject()" class="old-btn">Load</button>
 
     <iframe id="oldFrame"></iframe>
 </div>
 
-<!-- NEW VIEWER -->
-<div id="newViewer" class="hidden">
-    <h2>New Viewer</h2>
+<!-- NEW MODE -->
+<div id="newMode" class="hidden">
+    <h2>New Mode</h2>
 
-    <button class="mode-toggle" onclick="toggleMode()">Toggle Dark/Light Mode</button>
+    <button onclick="toggleDark()" style="background:#ffbb00;">Toggle Dark Mode</button>
     <br><br>
 
-    <input id="newInput" placeholder="Enter Hopscotch URL or UUID" style="padding:10px;font-size:20px;width:70%;">
-    <button onclick="loadNewProject()" style="background:#2ecc71;">Load Project</button>
+    <input id="newInput" placeholder="Enter URL or UUID" style="padding:10px;font-size:20px;width:70%;">
+    <button onclick="loadNewEmbedded()" class="new-btn">Embedded</button>
+    <button onclick="loadNewFull()" style="background:#8e44ad;color:white;">Full Project</button>
 
     <iframe id="newFrame"></iframe>
 </div>
 
-<div id="footer">
-    Not an official partnership with Hopscotch
-</div>
+<div id="footer">Not an official partnership with Hopscotch</div>
 
 <script>
-function loadOld() {
-    document.getElementById("home").style.display = "none";
-    document.getElementById("oldViewer").style.display = "block";
+function openOld() {
+    home.style.display = "none";
+    oldMode.style.display = "block";
+}
+function openNew() {
+    home.style.display = "none";
+    newMode.style.display = "block";
 }
 
-function loadNew() {
-    document.getElementById("home").style.display = "none";
-    document.getElementById("newViewer").style.display = "block";
-}
-
-/* Extract UUID */
-function extractUUID(text) {
-    const match = text.match(/[0-9A-Fa-f\-]{36}/);
+/* Extract UUID from URL */
+function getUUID(x) {
+    const match = x.match(/[0-9A-Fa-f\-]{36}/);
     return match ? match[0] : null;
 }
 
-/* Show error popup */
+/* ERROR POPUP */
 function showError() {
-    const popup = document.getElementById("errorPopup");
-    popup.classList.add("show");
-    setTimeout(() => popup.classList.remove("show"), 2000);
+    errorPopup.classList.add("show");
+    setTimeout(() => errorPopup.classList.remove("show"), 2000);
 }
 
-/* OLD VIEW */
+/* OLD MODE LOADING */
 function loadOldProject() {
-    let input = document.getElementById("oldInput").value;
-    let uuid = extractUUID(input);
-
+    let input = oldInput.value;
+    let uuid = getUUID(input);
     if (!uuid) return showError();
 
-    let frame = document.getElementById("oldFrame");
-    frame.src = "https://ae-hopscotch.github.io/hs-tools/play-project/?id=" + uuid;
-    frame.style.display = "block";
+    oldFrame.src = "https://ae-hopscotch.github.io/hs-tools/play-project/?id=" + uuid;
+    oldFrame.style.display = "block";
 }
 
-/* NEW VIEW */
-function loadNewProject() {
-    let input = document.getElementById("newInput").value;
-    let uuid = extractUUID(input);
-
+/* NEW MODE EMBEDDED */
+function loadNewEmbedded() {
+    let input = newInput.value;
+    let uuid = getUUID(input);
     if (!uuid) return showError();
 
-    let frame = document.getElementById("newFrame");
-    frame.src = "https://ae-hopscotch.github.io/hs-tools/play-project/?id=" + uuid;
-    frame.style.display = "block";
+    newFrame.src = "https://ae-hopscotch.github.io/hs-tools/play-project/?id=" + uuid;
+    newFrame.style.display = "block";
 }
 
-/* Dark/light mode toggle */
-function toggleMode() {
-    document.body.classList.toggle("light");
+/* NEW MODE FULL PROJECT */
+function loadNewFull() {
+    let input = newInput.value;
+    let uuid = getUUID(input);
+    if (!uuid) return showError();
+
+    window.open("https://ae-hopscotch.github.io/hs-tools/play-project/?id=" + uuid, "_blank");
+}
+
+/* DARK MODE TOGGLE */
+function toggleDark() {
+    document.body.classList.toggle("dark");
 }
 </script>
 
