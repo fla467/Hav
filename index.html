@@ -5,9 +5,12 @@
 <title>Hopscotch Viewer</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<!-- FUNNY FONT -->
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+
 <style>
     body {
-        font-family: Arial, sans-serif;
+        font-family: "Permanent Marker", cursive;
         background: #f0f0f0;
         color: #000;
         margin: 0;
@@ -28,10 +31,8 @@
     /* Popup Home Screen */
     #homePopup {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
         background: rgba(0,0,0,0.75);
         display: flex;
         align-items: center;
@@ -44,12 +45,13 @@
         border-radius: 15px;
         width: 80%;
         max-width: 400px;
+        font-family: "Permanent Marker", cursive;
     }
     #homeBox h1 { color: #ff6f61; }
     #homeBox button {
         margin: 10px;
         padding: 12px 20px;
-        font-size: 18px;
+        font-size: 22px;
         border: none;
         border-radius: 8px;
         cursor: pointer;
@@ -58,31 +60,32 @@
     }
     #homeBox button:hover { background: #e65b50; }
 
-    /* Shared elements */
-    .section { margin: 20px; }
+    /* Main elements */
     input {
         padding: 10px;
-        font-size: 16px;
+        font-size: 18px;
         width: 80%;
         max-width: 400px;
         border-radius: 8px;
         border: 1px solid #ccc;
+        font-family: "Permanent Marker", cursive;
     }
     button {
-        padding: 10px 18px;
-        font-size: 16px;
+        padding: 12px 20px;
+        font-size: 18px;
         border-radius: 8px;
         border: none;
         background: #ff6f61;
         color: white;
         cursor: pointer;
+        font-family: "Permanent Marker", cursive;
     }
     button:hover { background: #e65b50; }
 
     iframe {
         width: 90%;
         height: 600px;
-        border: 2px solid #ccc;
+        border: 3px solid #ccc;
         border-radius: 10px;
         display: none;
         margin-top: 15px;
@@ -96,18 +99,48 @@
     /* Dark mode toggle */
     #darkToggle {
         position: fixed;
-        top: 10px;
-        right: 10px;
-        padding: 8px 14px;
+        top: 10px; right: 10px;
+        padding: 10px 16px;
         border-radius: 8px;
         background: #444;
         color: white;
         cursor: pointer;
-        display: none; /* only for NEW layout */
+        display: none;
+    }
+
+    /* FUN ANIMATED CUSTOM ERROR POPUP */
+    #errorPopup {
+        position: fixed;
+        left: 50%; top: -300px;
+        transform: translateX(-50%);
+        background: #ff4747;
+        color: white;
+        padding: 25px 35px;
+        border-radius: 12px;
+        font-size: 24px;
+        z-index: 10000;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        opacity: 0;
+        transition: all 0.7s ease-out;
+        font-family: "Permanent Marker", cursive;
+    }
+    #errorPopup.show {
+        top: 20px;
+        opacity: 1;
+    }
+
+    /* Disclaimer */
+    #disclaimer {
+        margin-top: 40px;
+        font-size: 18px;
+        opacity: 0.7;
     }
 </style>
 </head>
 <body>
+
+<!-- CUSTOM ERROR POPUP -->
+<div id="errorPopup">Invalid URL or UUID!</div>
 
 <!-- DARK MODE BUTTON -->
 <button id="darkToggle" onclick="toggleDarkMode()">Dark Mode</button>
@@ -125,7 +158,7 @@
 <!-- OLD LAYOUT -->
 <div id="oldLayout">
     <h1>Old Hopscotch Viewer</h1>
-    <p>Enter a Hopscotch URL or UUID:</p>
+    <p>Enter URL or UUID:</p>
     <input id="oldInput" placeholder="Paste URL or UUID">
     <br><br>
     <button onclick="loadOldProject()">View Project</button>
@@ -140,7 +173,7 @@
     <button onclick="setMode('embed')">Embedded Mode</button>
     <button onclick="setMode('full')">Full Project Mode</button>
 
-    <p>Enter Hopscotch URL or UUID:</p>
+    <p>Enter URL or UUID:</p>
     <input id="newInput" placeholder="Paste URL or UUID">
 
     <br><br>
@@ -151,14 +184,29 @@
     <iframe id="newFrame"></iframe>
 </div>
 
+<!-- DISCLAIMER -->
+<div id="disclaimer">
+    Not an official partnership with Hopscotch.
+</div>
+
 <script>
 let currentMode = "embed";
+
+/* FUN ERROR POPUP */
+function showError() {
+    let popup = document.getElementById("errorPopup");
+    popup.classList.add("show");
+
+    setTimeout(() => {
+        popup.classList.remove("show");
+    }, 2000);
+}
 
 function toggleDarkMode() {
     document.body.classList.toggle("dark");
 }
 
-/* HOME SCREEN LOGIC */
+/* HOME SCREEN */
 function loadOld() {
     document.getElementById("homePopup").style.display = "none";
     document.getElementById("oldLayout").style.display = "block";
@@ -171,7 +219,7 @@ function loadNew() {
     document.getElementById("darkToggle").style.display = "block";
 }
 
-/* Extract UUID from a URL or accept direct UUID */
+/* UUID Extraction */
 function extractUUID(input) {
     try {
         let url = new URL(input);
@@ -182,33 +230,41 @@ function extractUUID(input) {
     }
 }
 
-/* OLD VIEWER FUNCTION */
+/* Validate UUID */
+function isValidUUID(uuid) {
+    return /^[A-Za-z0-9]+$/.test(uuid);
+}
+
+/* OLD VIEWER */
 function loadOldProject() {
     let input = document.getElementById("oldInput").value.trim();
-    if (!input) { alert("Enter a URL or UUID"); return; }
-
     let uuid = extractUUID(input);
-    let viewer = "https://ae-hopscotch.github.io/hs-tools/play-project/?id=" + uuid;
+
+    if (!isValidUUID(uuid)) {
+        showError();
+        return;
+    }
 
     let frame = document.getElementById("oldFrame");
-    frame.src = viewer;
+    frame.src = "https://ae-hopscotch.github.io/hs-tools/play-project/?id=" + uuid;
     frame.style.display = "block";
 }
 
-/* NEW VIEWER FUNCTIONS */
+/* NEW VIEWER */
 function setMode(m) {
     currentMode = m;
-    alert("Mode set to: " + m.toUpperCase());
 }
 
 function loadNewProject() {
     let input = document.getElementById("newInput").value.trim();
-    if (!input) { alert("Enter a URL or UUID"); return; }
-
     let uuid = extractUUID(input);
-    let viewer = "https://ae-hopscotch.github.io/hs-tools/play-project/?id=" + uuid;
 
-    document.getElementById("stats").textContent = "Plays: N/A | Likes: N/A";
+    if (!isValidUUID(uuid)) {
+        showError();
+        return;
+    }
+
+    let viewer = "https://ae-hopscotch.github.io/hs-tools/play-project/?id=" + uuid;
 
     if (currentMode === "embed") {
         let frame = document.getElementById("newFrame");
