@@ -28,6 +28,22 @@
         border: 1px solid #444;
     }
 
+    /* LEFT BUTTON: FOLLOW THE DEV */
+    #followBtn {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        padding: 12px 18px;
+        background: #ff6f61;
+        color: white;
+        border-radius: 10px;
+        font-size: 20px;
+        cursor: pointer;
+        z-index: 9999;
+        display: none;
+    }
+    #followBtn:hover { background:#e65b50; }
+
     /* Popup Home Screen */
     #homePopup {
         position: fixed;
@@ -91,12 +107,11 @@
         margin-top: 15px;
     }
 
-    /* Hide both layouts until chosen */
     #oldLayout, #newLayout {
         display: none;
     }
 
-    /* Dark mode toggle */
+    /* DARK MODE BUTTON */
     #darkToggle {
         position: fixed;
         top: 10px; right: 10px;
@@ -108,7 +123,7 @@
         display: none;
     }
 
-    /* FUN ANIMATED CUSTOM ERROR POPUP */
+    /* FUN ANIMATED ERROR POPUP */
     #errorPopup {
         position: fixed;
         left: 50%; top: -300px;
@@ -129,7 +144,7 @@
         opacity: 1;
     }
 
-    /* Disclaimer */
+    /* DISCLAIMER */
     #disclaimer {
         margin-top: 40px;
         font-size: 18px;
@@ -139,13 +154,12 @@
 </head>
 <body>
 
-<!-- CUSTOM ERROR POPUP -->
+<button id="followBtn" onclick="window.open('https://hopscotch.com/u/ORFO','_blank')">Follow the Dev</button>
+
 <div id="errorPopup">Invalid URL or UUID!</div>
 
-<!-- DARK MODE BUTTON -->
 <button id="darkToggle" onclick="toggleDarkMode()">Dark Mode</button>
 
-<!-- HOME SCREEN POPUP -->
 <div id="homePopup">
     <div id="homeBox">
         <h1>Hopscotch Viewer</h1>
@@ -155,7 +169,6 @@
     </div>
 </div>
 
-<!-- OLD LAYOUT -->
 <div id="oldLayout">
     <h1>Old Hopscotch Viewer</h1>
     <p>Enter URL or UUID:</p>
@@ -166,7 +179,6 @@
     <iframe id="oldFrame"></iframe>
 </div>
 
-<!-- NEW LAYOUT -->
 <div id="newLayout">
     <h1>New Hopscotch Viewer</h1>
 
@@ -184,42 +196,35 @@
     <iframe id="newFrame"></iframe>
 </div>
 
-<!-- DISCLAIMER -->
-<div id="disclaimer">
-    Not an official partnership with Hopscotch.
-</div>
+<div id="disclaimer">Not an official partnership with Hopscotch.</div>
 
 <script>
 let currentMode = "embed";
 
-/* FUN ERROR POPUP */
 function showError() {
     let popup = document.getElementById("errorPopup");
     popup.classList.add("show");
-
-    setTimeout(() => {
-        popup.classList.remove("show");
-    }, 2000);
+    setTimeout(() => popup.classList.remove("show"), 2000);
 }
 
 function toggleDarkMode() {
     document.body.classList.toggle("dark");
 }
 
-/* HOME SCREEN */
 function loadOld() {
     document.getElementById("homePopup").style.display = "none";
     document.getElementById("oldLayout").style.display = "block";
     document.getElementById("darkToggle").style.display = "none";
+    document.getElementById("followBtn").style.display = "block";
 }
 
 function loadNew() {
     document.getElementById("homePopup").style.display = "none";
     document.getElementById("newLayout").style.display = "block";
     document.getElementById("darkToggle").style.display = "block";
+    document.getElementById("followBtn").style.display = "block";
 }
 
-/* UUID Extraction */
 function extractUUID(input) {
     try {
         let url = new URL(input);
@@ -230,27 +235,21 @@ function extractUUID(input) {
     }
 }
 
-/* Validate UUID */
 function isValidUUID(uuid) {
     return /^[A-Za-z0-9]+$/.test(uuid);
 }
 
-/* OLD VIEWER */
 function loadOldProject() {
     let input = document.getElementById("oldInput").value.trim();
     let uuid = extractUUID(input);
 
-    if (!isValidUUID(uuid)) {
-        showError();
-        return;
-    }
+    if (!isValidUUID(uuid)) return showError();
 
     let frame = document.getElementById("oldFrame");
     frame.src = "https://ae-hopscotch.github.io/hs-tools/play-project/?id=" + uuid;
     frame.style.display = "block";
 }
 
-/* NEW VIEWER */
 function setMode(m) {
     currentMode = m;
 }
@@ -259,10 +258,7 @@ function loadNewProject() {
     let input = document.getElementById("newInput").value.trim();
     let uuid = extractUUID(input);
 
-    if (!isValidUUID(uuid)) {
-        showError();
-        return;
-    }
+    if (!isValidUUID(uuid)) return showError();
 
     let viewer = "https://ae-hopscotch.github.io/hs-tools/play-project/?id=" + uuid;
 
