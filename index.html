@@ -3,276 +3,185 @@
 <head>
 <meta charset="UTF-8">
 <title>Hopscotch Viewer</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- FUNNY FONT -->
 <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
 
 <style>
     body {
         font-family: "Permanent Marker", cursive;
-        background: #f0f0f0;
-        color: #000;
         margin: 0;
+        background: #222;
+        color: white;
         text-align: center;
     }
 
-    /* Dark mode */
-    body.dark {
-        background: #111;
-        color: #fff;
-    }
-    body.dark input, body.dark button {
-        background: #222;
-        color: #fff;
-        border: 1px solid #444;
-    }
-
-    /* Popup Home Screen */
-    #homePopup {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(0,0,0,0.75);
+    .home-screen {
         display: flex;
-        align-items: center;
+        flex-direction: column;
         justify-content: center;
-        z-index: 9999;
+        padding-top: 100px;
     }
-    #homeBox {
-        background: white;
-        padding: 30px;
-        border-radius: 15px;
-        width: 80%;
-        max-width: 400px;
-        font-family: "Permanent Marker", cursive;
-    }
-    #homeBox h1 { color: #ff6f61; }
-    #homeBox button {
-        margin: 10px;
-        padding: 12px 20px;
-        font-size: 22px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        background: #ff6f61;
-        color: white;
-    }
-    #homeBox button:hover { background: #e65b50; }
 
-    /* Main elements */
-    input {
-        padding: 10px;
-        font-size: 18px;
-        width: 80%;
-        max-width: 400px;
-        border-radius: 8px;
-        border: 1px solid #ccc;
-        font-family: "Permanent Marker", cursive;
-    }
     button {
-        padding: 12px 20px;
-        font-size: 18px;
-        border-radius: 8px;
-        border: none;
-        background: #ff6f61;
-        color: white;
-        cursor: pointer;
         font-family: "Permanent Marker", cursive;
+        padding: 15px 25px;
+        margin: 10px;
+        font-size: 22px;
+        cursor: pointer;
+        border: none;
+        border-radius: 12px;
     }
-    button:hover { background: #e65b50; }
+
+    .old-btn { background: #3498db; }
+    .new-btn { background: #2ecc71; }
+
+    .hidden { display: none; }
+
+    /* Dark/Light mode */
+    .light {
+        background: #f4f4f4;
+        color: #111;
+    }
+
+    /* Viewer wrapper */
+    #viewerSection { margin-top: 30px; display: none; }
 
     iframe {
         width: 90%;
         height: 600px;
-        border: 3px solid #ccc;
-        border-radius: 10px;
-        display: none;
-        margin-top: 15px;
-    }
-
-    /* Hide both layouts until chosen */
-    #oldLayout, #newLayout {
+        border: 4px solid #555;
+        border-radius: 12px;
+        margin-top: 20px;
         display: none;
     }
 
-    /* Dark mode toggle */
-    #darkToggle {
-        position: fixed;
-        top: 10px; right: 10px;
-        padding: 10px 16px;
-        border-radius: 8px;
-        background: #444;
-        color: white;
-        cursor: pointer;
-        display: none;
+    .mode-toggle {
+        font-size: 20px;
+        background: #ffbb00;
     }
 
-    /* FUN ANIMATED CUSTOM ERROR POPUP */
+    /* Custom error popup */
     #errorPopup {
         position: fixed;
-        left: 50%; top: -300px;
-        transform: translateX(-50%);
-        background: #ff4747;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        background: #e74c3c;
         color: white;
-        padding: 25px 35px;
-        border-radius: 12px;
-        font-size: 24px;
-        z-index: 10000;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-        opacity: 0;
-        transition: all 0.7s ease-out;
-        font-family: "Permanent Marker", cursive;
-    }
-    #errorPopup.show {
-        top: 20px;
-        opacity: 1;
+        padding: 25px 40px;
+        border-radius: 16px;
+        font-size: 26px;
+        transition: 0.25s ease;
+        z-index: 999;
     }
 
-    /* Disclaimer */
-    #disclaimer {
-        margin-top: 40px;
-        font-size: 18px;
-        opacity: 0.7;
+    #errorPopup.show {
+        transform: translate(-50%, -50%) scale(1);
     }
+
+    #footer {
+        margin-top: 40px;
+        opacity: 0.7;
+        font-size: 18px;
+    }
+
+    a { color: yellow; text-decoration: none; }
 </style>
 </head>
+
 <body>
 
-<!-- CUSTOM ERROR POPUP -->
-<div id="errorPopup">Invalid URL or UUID!</div>
+<!-- HOME SCREEN -->
+<div id="home" class="home-screen">
+    <h1>Hopscotch Viewer</h1>
+    <button class="old-btn" onclick="loadOld()">Old Viewer</button>
+    <button class="new-btn" onclick="loadNew()">New Viewer</button>
 
-<!-- DARK MODE BUTTON -->
-<button id="darkToggle" onclick="toggleDarkMode()">Dark Mode</button>
-
-<!-- HOME SCREEN POPUP -->
-<div id="homePopup">
-    <div id="homeBox">
-        <h1>Hopscotch Viewer</h1>
-        <p>Select a version:</p>
-        <button onclick="loadOld()">OLD VIEWER</button>
-        <button onclick="loadNew()">NEW VIEWER</button>
-    </div>
+    <button style="background:#ff66cc;" onclick="window.location='https://www.gethopscotch.com/6811491'">
+        Follow the Dev (Flabba_)
+    </button>
 </div>
 
-<!-- OLD LAYOUT -->
-<div id="oldLayout">
-    <h1>Old Hopscotch Viewer</h1>
-    <p>Enter URL or UUID:</p>
-    <input id="oldInput" placeholder="Paste URL or UUID">
-    <br><br>
-    <button onclick="loadOldProject()">View Project</button>
-    <br>
+<!-- ERROR POPUP -->
+<div id="errorPopup">Invalid URL Entered!</div>
+
+<!-- OLD VIEWER -->
+<div id="oldViewer" class="hidden">
+    <h2>Old Viewer</h2>
+    <input id="oldInput" placeholder="Enter Hopscotch URL or UUID" style="padding:10px;font-size:20px;width:70%;">
+    <button onclick="loadOldProject()" style="background:#3498db;">Load Project</button>
+
     <iframe id="oldFrame"></iframe>
 </div>
 
-<!-- NEW LAYOUT -->
-<div id="newLayout">
-    <h1>New Hopscotch Viewer</h1>
+<!-- NEW VIEWER -->
+<div id="newViewer" class="hidden">
+    <h2>New Viewer</h2>
 
-    <button onclick="setMode('embed')">Embedded Mode</button>
-    <button onclick="setMode('full')">Full Project Mode</button>
-
-    <p>Enter URL or UUID:</p>
-    <input id="newInput" placeholder="Paste URL or UUID">
-
+    <button class="mode-toggle" onclick="toggleMode()">Toggle Dark/Light Mode</button>
     <br><br>
-    <button onclick="loadNewProject()">Load Project</button>
 
-    <p id="stats">Plays: N/A | Likes: N/A</p>
+    <input id="newInput" placeholder="Enter Hopscotch URL or UUID" style="padding:10px;font-size:20px;width:70%;">
+    <button onclick="loadNewProject()" style="background:#2ecc71;">Load Project</button>
 
     <iframe id="newFrame"></iframe>
 </div>
 
-<!-- DISCLAIMER -->
-<div id="disclaimer">
-    Not an official partnership with Hopscotch.
+<div id="footer">
+    Not an official partnership with Hopscotch
 </div>
 
 <script>
-let currentMode = "embed";
-
-/* FUN ERROR POPUP */
-function showError() {
-    let popup = document.getElementById("errorPopup");
-    popup.classList.add("show");
-
-    setTimeout(() => {
-        popup.classList.remove("show");
-    }, 2000);
-}
-
-function toggleDarkMode() {
-    document.body.classList.toggle("dark");
-}
-
-/* HOME SCREEN */
 function loadOld() {
-    document.getElementById("homePopup").style.display = "none";
-    document.getElementById("oldLayout").style.display = "block";
-    document.getElementById("darkToggle").style.display = "none";
+    document.getElementById("home").style.display = "none";
+    document.getElementById("oldViewer").style.display = "block";
 }
 
 function loadNew() {
-    document.getElementById("homePopup").style.display = "none";
-    document.getElementById("newLayout").style.display = "block";
-    document.getElementById("darkToggle").style.display = "block";
+    document.getElementById("home").style.display = "none";
+    document.getElementById("newViewer").style.display = "block";
 }
 
-/* UUID Extraction */
-function extractUUID(input) {
-    try {
-        let url = new URL(input);
-        let parts = url.pathname.split("/");
-        return parts.pop() || parts.pop();
-    } catch {
-        return input;
-    }
+/* Extract UUID */
+function extractUUID(text) {
+    const match = text.match(/[0-9A-Fa-f\-]{36}/);
+    return match ? match[0] : null;
 }
 
-/* Validate UUID */
-function isValidUUID(uuid) {
-    return /^[A-Za-z0-9]+$/.test(uuid);
+/* Show error popup */
+function showError() {
+    const popup = document.getElementById("errorPopup");
+    popup.classList.add("show");
+    setTimeout(() => popup.classList.remove("show"), 2000);
 }
 
-/* OLD VIEWER */
+/* OLD VIEW */
 function loadOldProject() {
-    let input = document.getElementById("oldInput").value.trim();
+    let input = document.getElementById("oldInput").value;
     let uuid = extractUUID(input);
 
-    if (!isValidUUID(uuid)) {
-        showError();
-        return;
-    }
+    if (!uuid) return showError();
 
     let frame = document.getElementById("oldFrame");
     frame.src = "https://ae-hopscotch.github.io/hs-tools/play-project/?id=" + uuid;
     frame.style.display = "block";
 }
 
-/* NEW VIEWER */
-function setMode(m) {
-    currentMode = m;
-}
-
+/* NEW VIEW */
 function loadNewProject() {
-    let input = document.getElementById("newInput").value.trim();
+    let input = document.getElementById("newInput").value;
     let uuid = extractUUID(input);
 
-    if (!isValidUUID(uuid)) {
-        showError();
-        return;
-    }
+    if (!uuid) return showError();
 
-    let viewer = "https://ae-hopscotch.github.io/hs-tools/play-project/?id=" + uuid;
+    let frame = document.getElementById("newFrame");
+    frame.src = "https://ae-hopscotch.github.io/hs-tools/play-project/?id=" + uuid;
+    frame.style.display = "block";
+}
 
-    if (currentMode === "embed") {
-        let frame = document.getElementById("newFrame");
-        frame.src = viewer;
-        frame.style.display = "block";
-    } else {
-        window.open(viewer, "_blank");
-    }
+/* Dark/light mode toggle */
+function toggleMode() {
+    document.body.classList.toggle("light");
 }
 </script>
 
